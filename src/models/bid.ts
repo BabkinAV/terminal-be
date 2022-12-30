@@ -1,6 +1,6 @@
 import { Schema, model, Types } from "mongoose"
 
-interface BidItem  {
+export interface BidItem  {
 	name: string,
 	addQuality: string,
 	manufacturingTime: number,
@@ -13,7 +13,6 @@ interface BidItem  {
 
 const BidSchema = new Schema<BidItem>(
 	{
-		name: {type: String, required: true},
 		addQuality: {type: String, required: false},
 		manufacturingTime: {type: Number, required: true},
 		warrantyPeriod: {type: Number, required: true},

@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
 import {json} from 'body-parser';
 import mongoose from 'mongoose';
 import { Bid } from './models/bid';
@@ -27,6 +27,17 @@ app.use('/bids', bidsRoutes);
 
 
 app.use('/', authRoutes);
+
+const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
+	console.log(error);
+  const status = error.statusCode;
+  const message = error.message;
+	const data = error.data;
+  res.status(status).json({ message, data });
+}
+
+app.use(errorHandler);
+
 
 
 mongoose

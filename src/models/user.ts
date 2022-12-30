@@ -1,6 +1,6 @@
 import { Schema, model, Types } from 'mongoose';
 
-interface IUser {
+export interface IUser {
   name: string;
   password: string;
   bids: Types.ObjectId[];
