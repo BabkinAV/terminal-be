@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/', getBids);
 
+// TODO:use generics to type dynamic parame
 
 
 
