@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose"
+import { Schema, model, Types } from "mongoose"
 
 interface BidItem  {
 	name: string,
@@ -7,7 +7,8 @@ interface BidItem  {
 	warrantyPeriod: number,
 	payTerms: number,
 	cost: number,
-	discount: number
+	discount: number,
+	creator: Types.ObjectId;
 }
 
 const BidSchema = new Schema<BidItem>(
@@ -19,6 +20,11 @@ const BidSchema = new Schema<BidItem>(
 		payTerms: {type: Number, required: true},
 		cost: {type: Number, required: true},
 		discount: {type: Number, required: true},
+		creator: {
+			type: Schema.Types.ObjectId,
+			ref: 'User',
+			required: true,
+		}
 
 	}
 )
