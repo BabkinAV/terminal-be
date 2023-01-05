@@ -25,8 +25,5 @@ export const signupController:RequestHandler = (req, res, next) => {
 		next(err);
 	})
 	
-
-
-
 	
 }
