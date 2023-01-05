@@ -4,28 +4,21 @@ import { Server as httpServer }  from 'http';
 
 interface ServerToClientEvents {
   noArg: () => void;
+	timerReset: (counter: number, currentUser: number) => void;
+	currentTimer: (counter: number, currentUser: number) => void;
 }
 
 interface ClientToServerEvents {
-  hello: () => void;
+	timerSkip: () => void;
+  
 }
 
-interface InterServerEvents {
-  ping: () => void;
-}
-
-interface SocketData {
-  name: string;
-  age: number;
-}
-
-let io:Server;
+let io:Server<ClientToServerEvents,
+ServerToClientEvents>;
 
 const init = (httpServer: httpServer) => {
 	 io = new Server<ClientToServerEvents,
-		ServerToClientEvents,
-		InterServerEvents,
-		SocketData>(httpServer, {cors: {
+		ServerToClientEvents>(httpServer, {cors: {
 			origin: 'http://localhost:3000',
 			methods: ['GET', 'POST'],
 		},});
@@ -38,5 +31,4 @@ const getIO = () => {
 	}
 	return io;
 }
-
 export {init, getIO}

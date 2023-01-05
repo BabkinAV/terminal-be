@@ -1,25 +1,22 @@
 import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
 import { createServer } from 'http';
-import {Server} from 'socket.io';
 import {json} from 'body-parser';
 import mongoose from 'mongoose';
 
-import { Bid } from './models/bid';
 
 import bidsRoutes from './routes/bids';
 import authRoutes from './routes/auth';
-import {init, getIO} from './socket'
+import {init, getIO} from './socket/socket'
+import { timerUpdate } from './socket/timerHandler';
 
 const MONGODB_URI =
   'mongodb+srv://raybeck:RfG8yjk8zNNCyW3k@cluster0.jevkr.mongodb.net/terminal?retryWrites=true&w=majority';
 
 
 
-// const intervalId = setTimeout(()=> {
-// 	console.log('Interval pinged!')
-// }, 1000);
 
 let counter = 30;
+let currentUser = 0;
 
 
 
@@ -67,25 +64,31 @@ mongoose
 
 		io.on("connection", (socket) => {
 			console.log('client connected!');
-			socket.emit('current timer', counter);
+			socket.emit('currentTimer', counter, currentUser);
+			socket.on('timerSkip', () => {
+				clearInterval(intervalId);
+				counter = 30;
+				currentUser = (currentUser === 3) ? 0 : ++currentUser;
+				console.log('Manual timer reset! Current timer: ', counter, 'Current user: ', currentUser);
+				io.emit('timerReset', counter, currentUser);
+				intervalId = setInterval(() => {
+
+					[counter, currentUser] = timerUpdate(counter, currentUser, io)
+				
+				}, 1000);
+				
+			})
 		});
 
-		const intervalId = setInterval(() => {
+		let intervalId = setInterval(() => {
 
-			if (counter%5 === 0) {
-				console.log('Current counter value: ', counter)
-			}
-			if (counter === 0) {
-				counter = 30
-				console.log('Timer reset! Current timer value: ', counter);
-				io.emit('timer update', counter)
-			}
-			counter--;
+			[counter, currentUser] = timerUpdate(counter, currentUser, io)
 
-			io.emit('Timer updated!', counter)
 			
 		
 		}, 1000);
+
+
 		
 		
 		httpServer.listen(8080);
