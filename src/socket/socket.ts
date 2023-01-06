@@ -2,13 +2,14 @@ import {Server} from 'socket.io';
 
 import { Server as httpServer }  from 'http';
 
-interface ServerToClientEvents {
+export interface ServerToClientEvents {
   noArg: () => void;
 	timerReset: (counter: number, currentUser: number) => void;
 	currentTimer: (counter: number, currentUser: number) => void;
+	authError: (message: string) => void;
 }
 
-interface ClientToServerEvents {
+export interface ClientToServerEvents {
 	timerSkip: () => void;
   
 }

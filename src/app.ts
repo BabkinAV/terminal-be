@@ -1,23 +1,22 @@
-import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from 'express';
+import express, {
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+  ErrorRequestHandler,
+} from 'express';
 import { createServer } from 'http';
-import {json} from 'body-parser';
+import { json } from 'body-parser';
 import mongoose from 'mongoose';
-
 
 import bidsRoutes from './routes/bids';
 import authRoutes from './routes/auth';
-import {init, getIO} from './socket/socket'
-import { timerUpdate } from './socket/timerHandler';
-
-const MONGODB_URI =
-  'mongodb+srv://raybeck:RfG8yjk8zNNCyW3k@cluster0.jevkr.mongodb.net/terminal?retryWrites=true&w=majority';
-
-
+import { init, getIO } from './socket/socket';
+import { registerTimerSkip, timerUpdate } from './socket/timerHandler';
 
 
 let counter = 30;
 let currentUser = 0;
-
 
 
 mongoose.set('strictQuery', false);
@@ -36,64 +35,56 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
-
 app.use('/bids', bidsRoutes);
-
 
 app.use('/', authRoutes);
 
-const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
-	console.log(error);
-  const status = error.statusCode;
-  const message = error.message;
-	const data = error.data;
-  res.status(status).json({ message, data });
+export class StatusError extends Error {
+  statusCode?: number;
+  data?: string;
 }
+
+
+const errorHandler: ErrorRequestHandler = (
+  error: StatusError,
+  req,
+  res,
+  next
+) => {
+  console.log(error);
+  const status = error.statusCode ?? 500;
+  const message = error.message;
+  const data = error.data;
+  res.status(status).json({ message, data });
+};
 
 app.use(errorHandler);
 
-
 mongoose
-  .connect(MONGODB_URI)
+  .connect(process.env.MONGODB_URI)
   .then((result) => {
-		const httpServer = createServer(app);
-		const io = init(httpServer);
-		
+    const httpServer = createServer(app);
+    const io = init(httpServer);
 
-		io.on("connection", (socket) => {
-			console.log('client connected!');
-			socket.emit('currentTimer', counter, currentUser);
-			socket.on('timerSkip', () => {
-				clearInterval(intervalId);
-				counter = 30;
-				currentUser = (currentUser === 3) ? 0 : ++currentUser;
-				console.log('Manual timer reset! Current timer: ', counter, 'Current user: ', currentUser);
-				io.emit('timerReset', counter, currentUser);
-				intervalId = setInterval(() => {
+    io.on('connection', (socket) => {
+      console.log('client connected!');
+      socket.emit('currentTimer', counter, currentUser);
+      socket.on('timerSkip', () => {
+        [intervalId, counter, currentUser] = registerTimerSkip(
+          io,
+          socket,
+          intervalId,
+          counter,
+          currentUser
+        );
+      });
+    });
 
-					[counter, currentUser] = timerUpdate(counter, currentUser, io)
-				
-				}, 1000);
-				
-			})
-		});
+    let intervalId = setInterval(() => {
+      [counter, currentUser] = timerUpdate(counter, currentUser, io);
+    }, 1000);
 
-		let intervalId = setInterval(() => {
-
-			[counter, currentUser] = timerUpdate(counter, currentUser, io)
-
-			
-		
-		}, 1000);
-
-
-		
-		
-		httpServer.listen(8080);
-	
+    httpServer.listen(8080);
   })
-	
-  .catch((err) => console.log(err));
 
+  .catch((err) => console.log(err));
