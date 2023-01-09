@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "concurrently --kill-others \"tsc -w\" \"nodemon dist/app.js\"",
-    "run": "nodemon dist/app.js"
+		"build": "tsc",
+		"prod": "node ./dist/app.js"
   },
   "author": "",
   "license": "ISC",
