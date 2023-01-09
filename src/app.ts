@@ -11,14 +11,15 @@ import mongoose from 'mongoose';
 
 import bidsRoutes from './routes/bids';
 import authRoutes from './routes/auth';
-import { init, getIO } from './socket/socket';
-import {  timerUpdate } from './socket/timerHandler';
-import { registerTimerSkip } from './socket/timerUpdateHandler';
+import jwt from 'jsonwebtoken';
 
+import { init, getIO } from './socket/socket';
+import { timerUpdate } from './socket/timerHandler';
+import { registerTimerSkip } from './socket/timerUpdateHandler';
+import { getParticipantIds } from './controllers/bids';
 
 let counter = 30;
 let currentUser = 0;
-
 
 mongoose.set('strictQuery', false);
 
@@ -45,7 +46,6 @@ export class StatusError extends Error {
   data?: string;
 }
 
-
 const errorHandler: ErrorRequestHandler = (
   error: StatusError,
   req,
@@ -63,34 +63,68 @@ app.use(errorHandler);
 
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then((result) => {
-    const httpServer = createServer(app);
-    const io = init(httpServer);
+  .then((result) => getParticipantIds())
+  .then((participantIdArray) => {
+    console.log(participantIdArray);
+    if (participantIdArray) {
+      const httpServer = createServer(app);
+      const io = init(httpServer);
 
-    io.on('connection', (socket) => {
-      console.log('client connected!');
-      socket.emit('currentTimer', counter, currentUser);
-      socket.on('timerSkip', () => {
-        [ counter, currentUser] = registerTimerSkip(
-          io,
-          socket,
-          intervalId,
-          counter,
-          currentUser
-        );
-					intervalId = setInterval(() => {
+      io.on('connection', (socket) => {
+        console.log('client connected!');
+        socket.emit('currentTimer', counter, participantIdArray[currentUser]);
 
-						[counter, currentUser] = timerUpdate(counter, currentUser, io)
+        socket.on('timerSkip', () => {
+					let userId: string;
+					let decodedToken;
+					try {
+						decodedToken = jwt.verify(socket.handshake.auth.token, process.env.JWT_SECRET) as {userId: string};
+						 userId = decodedToken.userId;
+
+						 if (decodedToken && participantIdArray[currentUser] === decodedToken.userId) {
+
+							[counter, currentUser] = registerTimerSkip(
+								io,
+								socket,
+								intervalId,
+								counter,
+								currentUser,
+								participantIdArray!
+							);
+							intervalId = setInterval(() => {
+								[counter, currentUser] = timerUpdate(
+									counter,
+									currentUser,
+									io,
+									participantIdArray
+								);
+							}, 1000);
+						} else {
+							throw Error('Not authorized');
+						}
+						
+					} catch (error) {
+						
+						console.log('Not authorized');
+						socket.emit('authError', 'Not authorized');
+					}
 					
-					}, 1000);
+          
+        });
       });
-    });
 
-    let intervalId = setInterval(() => {
-      [counter, currentUser] = timerUpdate(counter, currentUser, io);
-    }, 1000);
-
-    httpServer.listen(8080);
+      let intervalId = setInterval(() => {
+        [counter, currentUser] = timerUpdate(
+          counter,
+          currentUser,
+          io,
+          participantIdArray
+        );
+      }, 1000);
+      httpServer.listen(8080);
+    } else {
+      throw new Error('No participant list found');
+    }
   })
 
   .catch((err) => console.log(err));

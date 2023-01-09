@@ -28,6 +28,11 @@ export const getBids: RequestHandler = (req, res, next) => {
     });
 };
 
+export const getParticipantIds = () =>
+{
+	return Bid.find().populate<{creator: {name: string, _id: string}}>('creator', 'name').then(data=> data.map(el=> el.creator._id.toString())).catch(err=> console.log(err))
+}
+
 export const createBid: RequestHandler = (req, res, next) => {
   const bidRequest = req.body as Omit<BidItem, 'creator'>;
 	console.log(req.body);

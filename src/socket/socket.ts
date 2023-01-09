@@ -4,8 +4,8 @@ import { Server as httpServer }  from 'http';
 
 export interface ServerToClientEvents {
   noArg: () => void;
-	timerReset: (counter: number, currentUser: number) => void;
-	currentTimer: (counter: number, currentUser: number) => void;
+	timerReset: (counter: number, currentUser: string) => void;
+	currentTimer: (counter: number, currentUser: string) => void;
 	authError: (message: string) => void;
 }
 
