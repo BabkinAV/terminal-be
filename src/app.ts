@@ -12,7 +12,8 @@ import mongoose from 'mongoose';
 import bidsRoutes from './routes/bids';
 import authRoutes from './routes/auth';
 import { init, getIO } from './socket/socket';
-import { registerTimerSkip, timerUpdate } from './socket/timerHandler';
+import {  timerUpdate } from './socket/timerHandler';
+import { registerTimerSkip } from './socket/timerUpdateHandler';
 
 
 let counter = 30;
@@ -70,13 +71,18 @@ mongoose
       console.log('client connected!');
       socket.emit('currentTimer', counter, currentUser);
       socket.on('timerSkip', () => {
-        [intervalId, counter, currentUser] = registerTimerSkip(
+        [ counter, currentUser] = registerTimerSkip(
           io,
           socket,
           intervalId,
           counter,
           currentUser
         );
+					intervalId = setInterval(() => {
+
+						[counter, currentUser] = timerUpdate(counter, currentUser, io)
+					
+					}, 1000);
       });
     });
 

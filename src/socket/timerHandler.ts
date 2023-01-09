@@ -18,25 +18,7 @@ const timerUpdate = (counter: number, currentUser: number, io:Server<ClientToSer
 	return [counter, currentUser];
 }
 
-const registerTimerSkip = (io: Server, socket: Socket<ClientToServerEvents, ServerToClientEvents>, intervalId:   NodeJS.Timer, counter: number, currentUser: number): [NodeJS.Timer, number, number] => {
-	const token = socket.handshake.auth.token;
-				if (token === 'abcd') {
-					clearInterval(intervalId);
-					counter = 30;
-					currentUser = (currentUser === 3) ? 0 : ++currentUser;
-					console.log('Manual timer reset! Current timer: ', counter, 'Current user: ', currentUser);
-					io.emit('timerReset', counter, currentUser);
-					intervalId = setInterval(() => {
-
-						[counter, currentUser] = timerUpdate(counter, currentUser, io)
-					
-					}, 1000);
-				} else {
-					console.log('connection refused')
-					socket.emit('authError', 'authentication error!' );
-				}
-				return [intervalId, counter, currentUser]
-}
 
 
-export  {timerUpdate, registerTimerSkip};
+
+export  {timerUpdate,};
