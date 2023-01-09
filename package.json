@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "concurrently --kill-others \"tsc -w\" \"nodemon dist/app.js\"",
-		"build": "tsc",
-		"prod": "node ./dist/app.js"
+    "build": "tsc",
+    "prod": "node ./dist/app.js"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +25,7 @@
     "@types/jsonwebtoken": "^9.0.0",
     "@types/node": "^18.11.18",
     "concurrently": "^7.6.0",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "typescript": "^4.9.4"
   }
 }
