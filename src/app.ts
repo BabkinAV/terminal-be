@@ -1,3 +1,4 @@
+import * as dotenv from 'dotenv' 
 import express, {
   Request,
   Response,
@@ -18,10 +19,13 @@ import { timerUpdate } from './socket/timerHandler';
 import { registerTimerSkip } from './socket/timerUpdateHandler';
 import { getParticipantIds } from './controllers/bids';
 
+dotenv.config();
+
 let counter = 30;
 let currentUser = 0;
 
 mongoose.set('strictQuery', false);
+
 
 const app = express();
 
@@ -61,6 +65,7 @@ const errorHandler: ErrorRequestHandler = (
 
 app.use(errorHandler);
 
+
 mongoose
   .connect(process.env.MONGODB_URI)
   .then((result) => getParticipantIds())
@@ -71,7 +76,7 @@ mongoose
       const io = init(httpServer);
 
       io.on('connection', (socket) => {
-        console.log('client connected!');
+        // console.log(`client ${socket.id} connected!`);
         socket.emit('currentTimer', counter, participantIdArray[currentUser]);
 
         socket.on('timerSkip', () => {
@@ -111,7 +116,13 @@ mongoose
 					
           
         });
+
+				// socket.on('disconnect', () => {
+				// 	console.log(`Socket ${socket.id} has been disconnected`)
+				// })
+
       });
+
 
       let intervalId = setInterval(() => {
         [counter, currentUser] = timerUpdate(
