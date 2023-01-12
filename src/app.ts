@@ -7,6 +7,7 @@ import express, {
   ErrorRequestHandler,
 } from 'express';
 import { createServer } from 'http';
+import {Server} from "socket.io"
 import { json } from 'body-parser';
 import mongoose from 'mongoose';
 
@@ -73,7 +74,7 @@ mongoose
     console.log(participantIdArray);
     if (participantIdArray) {
       const httpServer = createServer(app);
-      const io = init(httpServer);
+      const io = new Server (httpServer,  { cors: { origin: '*' } });
 
       io.on('connection', (socket) => {
         // console.log(`client ${socket.id} connected!`);
