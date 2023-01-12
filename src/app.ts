@@ -74,7 +74,7 @@ mongoose
     console.log(participantIdArray);
     if (participantIdArray) {
       const httpServer = createServer(app);
-      const io = new Server (httpServer,  { cors: { origin: ['http://localhost:3000', 'https://classy-zuccutto-32be7d.netlify.app'] } });
+      const io = new Server (httpServer,  { cors: { origin: ['http://localhost:3000', 'https://classy-zuccutto-32be7d.netlify.app/participant'] } });
 
       io.on('connection', (socket) => {
         // console.log(`client ${socket.id} connected!`);
