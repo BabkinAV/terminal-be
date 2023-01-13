@@ -33,7 +33,7 @@ export const getParticipantIds = () =>
 }
 
 
-// ***Draft of a function to create user bids on DB***
+// *****Draft of a function to create user bids on DB*****
 
 
 // export const createBid: RequestHandler = (req, res, next) => {
