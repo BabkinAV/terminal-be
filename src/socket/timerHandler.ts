@@ -2,13 +2,13 @@ import { Server, Socket } from "socket.io";
 import {ServerToClientEvents, ClientToServerEvents} from './socket';
 
 
-const timerUpdate = (counter: number, currentUser: number, io:Server<ClientToServerEvents, ServerToClientEvents>, participantIdArray: string[]) => {
+const timerUpdate = (counter: number, maxCounter: number, currentUser: number, io:Server<ClientToServerEvents, ServerToClientEvents>, participantIdArray: string[]) => {
 
-	if (counter%5 === 0) {
+	if (counter%10 === 0) {
 		console.log('Current counter value: ', counter)
 	}
 	if (counter === 0) {
-		counter = 30
+		counter = maxCounter
 		currentUser = (currentUser === 3) ? 0 : ++currentUser;
 		console.log('Timer reset! Current timer value: ', counter, 'Current user: ', currentUser);
 		io.emit('timerReset', counter,  participantIdArray[currentUser]);
@@ -16,9 +16,20 @@ const timerUpdate = (counter: number, currentUser: number, io:Server<ClientToSer
 	counter--;
 
 	return [counter, currentUser];
+	
+}
+
+const registerTimerSkip = (io: Server, socket: Socket<ClientToServerEvents, ServerToClientEvents>, intervalId:   NodeJS.Timer, counter: number, maxCounter:number, currentUser: number, participantIdArray: string[]): [ number, number] => {
+				clearInterval(intervalId);
+					counter = maxCounter;
+					currentUser = (currentUser === 3) ? 0 : ++currentUser;
+					console.log('Manual timer reset! Current timer: ', counter, 'Current user: ', currentUser);
+					io.emit('timerReset', counter, participantIdArray[currentUser]);
+				return [ counter, currentUser ]
 }
 
 
 
 
-export  {timerUpdate,};
+
+export  {timerUpdate, registerTimerSkip};
