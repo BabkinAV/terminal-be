@@ -67,7 +67,7 @@ mongoose
       const io = new Server(httpServer, {
         cors: {
           origin: [
-            'https://classy-zuccutto-32be7d.netlify.app',
+            'https://classy-zuccutto.netlify.app',
             'http://localhost:3000',
           ],
         },
