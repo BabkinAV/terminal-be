@@ -62,6 +62,8 @@ const errorHandler: ErrorRequestHandler = (
 
 app.use(errorHandler);
 
+const port = process.env.PORT;
+
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -139,7 +141,8 @@ mongoose
           participantIdArray
         );
       }, 1000);
-      httpServer.listen(8080);
+      httpServer.listen(port);
+      console.log(`⚡️[server]: Server is running at http://localhost:${port}`)
     } else {
       throw new Error('No participant list found');
     }
