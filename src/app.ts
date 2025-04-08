@@ -43,13 +43,17 @@ export class StatusError extends Error {
   data?: string;
 }
 
+
+
+
+
 const errorHandler: ErrorRequestHandler = (
   error: StatusError,
   req,
   res,
   next
 ) => {
-  console.log(error);
+  // console.log(error);
   const status = error.statusCode ?? 500;
   const message = error.message;
   const data = error.data;
@@ -58,9 +62,12 @@ const errorHandler: ErrorRequestHandler = (
 
 app.use(errorHandler);
 
+
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then((result) => getParticipantIds())
+  .then((result) => {
+    console.log('MongoDB connected!')
+    return getParticipantIds()})
   .then((participantIdArray) => {
     if (participantIdArray) {
       const httpServer = createServer(app);
@@ -74,7 +81,7 @@ mongoose
       });
 
       io.on('connection', (socket) => {
-        console.log(`client ${socket.id} connected!`);
+        // console.log(`client ${socket.id} connected!`);
         socket.emit('currentTimer', counter, participantIdArray[currentUser]);
 
         socket.on('timerSkip', () => {
@@ -113,14 +120,14 @@ mongoose
               throw Error('Not authorized');
             }
           } catch (error) {
-            console.log('Not authorized');
+            // console.log('Not authorized');
             socket.emit('authError', 'Not authorized');
           }
         });
 
-        socket.on('disconnect', () => {
-          console.log(`Socket ${socket.id} has been disconnected`);
-        });
+        // socket.on('disconnect', () => {
+        //   console.log(`Socket ${socket.id} has been disconnected`);
+        // });
       });
 
       let intervalId = setInterval(() => {
